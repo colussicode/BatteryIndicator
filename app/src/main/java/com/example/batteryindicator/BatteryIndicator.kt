@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import com.example.batteryindicator.ui.theme.GreenLevel
+import com.example.batteryindicator.ui.theme.LightGrey
+import com.example.batteryindicator.ui.theme.OrangeLevel
+import com.example.batteryindicator.ui.theme.RedLevel
 
 @Composable
 fun BatteryIndicator(
@@ -31,14 +37,17 @@ fun BatteryIndicator(
     @DrawableRes trailingIcon: Int,
 ){
     val batteryColor = when (batteryLevel) {
-        in 0..20 -> Color.Red
-        in 21..50 -> Color.Yellow
-        else -> Color.Green
+        in 0..20 -> RedLevel
+        in 21..79 -> OrangeLevel
+        else -> GreenLevel
     }
+
+    val batteryLevelDimen = calculateBatteryColorSize(batteryLevel!!).toInt().dp
 
     Column(
         modifier = Modifier.fillMaxSize()
-            .padding(paddingValues),
+            .padding(paddingValues)
+            .background(LightGrey),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -49,11 +58,13 @@ fun BatteryIndicator(
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(
+                    if(batteryLevel <= 20) 60.dp else 48.dp
+                )
                     .padding(end = 16.dp),
                 painter = painterResource(id = leadingIcon),
                 contentDescription = null,
-                tint = Color.Unspecified
+                tint = if(batteryLevel <= 20) RedLevel else Color.Unspecified
             )
 
             Row(
@@ -65,15 +76,39 @@ fun BatteryIndicator(
                         shape = RoundedCornerShape(16.dp)
                     )
             ) {
-                Row(
+                Box(
                     modifier = Modifier.fillMaxSize()
-                        .padding(3.dp)
+                        .padding(5.dp)
                         .background(
-                            color = batteryColor,
+                            color = Color.Transparent,
                             shape = RoundedCornerShape(16.dp)
                         )
-                        .weight(1f),
-                ) {  }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxSize()
+                            .zIndex(1f),
+                        horizontalArrangement = Arrangement.Absolute.SpaceEvenly
+                    ) {
+                        for(i in 0..3) {
+                            Box(
+                                modifier = Modifier.fillMaxHeight()
+                                    .width(3.dp)
+                                    .background(Color.White)
+                            ){}
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier.fillMaxHeight()
+                            .padding(2.dp)
+                            .width(batteryLevelDimen)
+                            .background(
+                                color = batteryColor,
+                                shape = RoundedCornerShape(12.dp)
+                        )
+                    ) {
+                    }
+                }
             }
             Box(
                 modifier = Modifier.height(25.dp)
@@ -85,11 +120,13 @@ fun BatteryIndicator(
             ){}
 
             Icon(
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(
+                    if(batteryLevel == 100) 60.dp else 48.dp
+                )
                     .padding(start = 16.dp),
                 painter = painterResource(id = trailingIcon),
                 contentDescription = null,
-                tint = Color.Unspecified
+                tint = if(batteryLevel == 100) GreenLevel else Color.Unspecified
             )
         }
     }
